@@ -8,23 +8,33 @@ import { Skeleton } from '../components/PizzaBlock/Skeleton';
 const Home = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [categoryId, setCategoryId] = useState(0);
+  const [sortType, setSortType] = useState({ name: 'популярности', sortProperty: 'rating' });
 
   useEffect(() => {
-    fetch('https://62a9b693ec36bf40bdbd0ffb.mockapi.io/items')
+    const sortBy = sortType.sortProperty.replace('-', '');
+    const order = sortType.sortProperty.includes('-') ? 'asc' : 'desc';
+    const category = categoryId > 0 ? `category=${categoryId}` : '';
+
+    setLoading(true);
+    fetch(
+      `https://62a9b693ec36bf40bdbd0ffb.mockapi.io/items?${category}&sortBy=${sortBy}&order=${order}`,
+    )
       .then((res) => res.json())
       .then((data) => {
         setItems(data);
         setLoading(false);
       });
-  }, []);
+    window.scrollTo(0, 0);
+  }, [categoryId, sortType]);
 
   const showSkeletons = () => [...new Array(6)].map((_, i) => <Skeleton key={i} />);
 
   return (
-    <>
+    <div className="container">
       <div className="content__top">
-        <Categories />
-        <Sort />
+        <Categories value={categoryId} onClick={(i) => setCategoryId(i)} />
+        <Sort value={sortType} onClick={(obj) => setSortType(obj)} />
       </div>
       <h2 className="content__title">Все пиццы</h2>
       <div className="content__items">
@@ -41,7 +51,7 @@ const Home = () => {
               />
             ))}
       </div>
-    </>
+    </div>
   );
 };
 
